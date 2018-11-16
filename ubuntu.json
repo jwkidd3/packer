@@ -1,0 +1,47 @@
+{
+  "builders": [{
+    "type": "azure-arm",
+
+    "client_id": "<insert yours>",
+    "client_secret": "<insert yours>",
+    "tenant_id": "<insert yours>",
+    "subscription_id": "<insert yours>",
+
+    "managed_image_resource_group_name": "table7jkpacker",
+    "managed_image_name": "table7packerimage",
+
+    "os_type": "Linux",
+    "image_publisher": "Canonical",
+    "image_offer": "UbuntuServer",
+    "image_sku": "16.04-LTS",
+    
+    "ssh_username": "azureops",
+ 
+    "azure_tags": {
+        "dept": "Dev",
+        "task": "Image deployment"
+    },
+
+    "location": "southcentralus",
+    "vm_size": "Standard_DS2_v2"
+  }],
+  "provisioners": [
+   {
+    "type": "ansible",
+    "playbook_file": "./java_app.yml",
+    "ansible_env_vars": ["ANSIBLE_HOST_KEY_CHECKING=False"],
+    "user": "azureops"
+   },
+   {
+    "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+    "inline": [
+      "apt-get update",
+      "apt-get upgrade -y",
+      "apt-get -y install openjdk",
+
+      "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
+    ],
+    "inline_shebang": "/bin/sh -x",
+    "type": "shell"
+  }
+]}
